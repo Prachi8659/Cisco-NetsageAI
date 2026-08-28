@@ -1,7 +1,7 @@
 import datetime
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
-from backend.app.database.session import Base
+from app.database.session import Base
 
 class PktFile(Base):
     __tablename__ = "pkt_files"

@@ -3,7 +3,7 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Dict, List, Optional, Set, Tuple
 
-from backend.app.services.pkt.models import (
+from app.services.pkt.models import (
     FactSource,
     ConnectionStatus,
     AnalysisStatus,
@@ -16,7 +16,7 @@ from backend.app.services.pkt.models import (
     NormalizedNetworkFacts,
     PktAnalysisResult,
 )
-from backend.app.services.pkt.decoder import pkt_decoder, PktDecodeResult
+from app.services.pkt.decoder import pkt_decoder, PktDecodeResult
 
 
 class PktExtractor:

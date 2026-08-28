@@ -1,13 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from backend.app.database.session import get_db
-from backend.app.schemas.remediation import (
+from app.database.session import get_db
+from app.schemas.remediation import (
     HumanReviewCreate,
     RemediationConfirmInput,
     HumanReviewResponse,
     VerificationResponse
 )
-from backend.app.services.remediation.service import remediation_service
+from app.services.remediation.service import remediation_service
 
 router = APIRouter(tags=["Human Review & Remediation Verification"])
 

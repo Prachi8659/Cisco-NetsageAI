@@ -1,14 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from backend.app.database.session import get_db
-from backend.app.models.case import Case
-from backend.app.models.evidence import CiscoEvidence
-from backend.app.schemas.evidence import (
+from app.database.session import get_db
+from app.models.case import Case
+from app.models.evidence import CiscoEvidence
+from app.schemas.evidence import (
     CiscoEvidenceCreate,
     CiscoEvidenceResponse,
     EvidenceParseResponse,
 )
-from backend.app.services.evidence.parser_service import evidence_parser_service
+from app.services.evidence.parser_service import evidence_parser_service
 
 router = APIRouter(tags=["Cisco Show-Command Evidence"])
 

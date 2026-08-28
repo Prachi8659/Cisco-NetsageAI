@@ -1,11 +1,11 @@
-from backend.app.services.evidence.base import (
+from app.services.evidence.base import (
     BaseEvidenceParser,
     EvidenceParseResult,
     normalize_command_string,
     clean_cisco_output,
     normalize_interface_name,
 )
-from backend.app.services.evidence.parser_service import (
+from app.services.evidence.parser_service import (
     EvidenceParserService,
     evidence_parser_service,
 )

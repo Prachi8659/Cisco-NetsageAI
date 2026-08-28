@@ -1,7 +1,7 @@
 from typing import List, Set, Tuple
-from backend.app.services.pkt.models import NormalizedNetworkFacts
-from backend.app.services.rules.base import BaseRule
-from backend.app.services.rules.models import RuleFinding, RuleSeverity, RuleStatus
+from app.services.pkt.models import NormalizedNetworkFacts
+from app.services.rules.base import BaseRule
+from app.services.rules.models import RuleFinding, RuleSeverity, RuleStatus
 
 AUXILIARY_PORT_PREFIXES = (
     "bluetooth",

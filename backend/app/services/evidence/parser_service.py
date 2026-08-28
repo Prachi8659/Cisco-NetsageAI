@@ -1,20 +1,20 @@
 import re
 from typing import List
 
-from backend.app.services.evidence.base import (
+from app.services.evidence.base import (
     BaseEvidenceParser,
     EvidenceParseResult,
     normalize_command_string,
 )
-from backend.app.services.evidence.interface_parser import InterfaceParser
-from backend.app.services.evidence.route_parser import RouteParser
-from backend.app.services.evidence.vlan_parser import VlanParser
-from backend.app.services.evidence.trunk_parser import TrunkParser
-from backend.app.services.evidence.running_config_parser import RunningConfigParser
-from backend.app.services.evidence.acl_parser import AclParser
-from backend.app.services.evidence.dhcp_parser import DhcpParser
-from backend.app.services.evidence.mac_parser import MacParser
-from backend.app.services.pkt.models import (
+from app.services.evidence.interface_parser import InterfaceParser
+from app.services.evidence.route_parser import RouteParser
+from app.services.evidence.vlan_parser import VlanParser
+from app.services.evidence.trunk_parser import TrunkParser
+from app.services.evidence.running_config_parser import RunningConfigParser
+from app.services.evidence.acl_parser import AclParser
+from app.services.evidence.dhcp_parser import DhcpParser
+from app.services.evidence.mac_parser import MacParser
+from app.services.pkt.models import (
     AnalysisStatus,
     FactSource,
     NormalizedNetworkFacts,

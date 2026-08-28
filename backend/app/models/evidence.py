@@ -1,7 +1,7 @@
 import datetime
 from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, JSON
 from sqlalchemy.orm import relationship
-from backend.app.database.session import Base
+from app.database.session import Base
 
 class CiscoEvidence(Base):
     __tablename__ = "cisco_evidence"

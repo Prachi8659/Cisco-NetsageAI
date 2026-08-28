@@ -2,7 +2,7 @@ import json
 import re
 import requests
 from typing import Any, Dict
-from backend.app.services.ai.base import BaseAiProvider
+from app.services.ai.base import BaseAiProvider
 
 FALLBACK_MODELS = [
     "gemini-3.1-flash-lite",

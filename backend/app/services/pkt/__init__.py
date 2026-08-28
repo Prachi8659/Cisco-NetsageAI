@@ -1,8 +1,8 @@
-from backend.app.services.pkt.validator import validate_pkt_file, PktValidationError
-from backend.app.services.pkt.storage import pkt_storage_service, PktStorageService
-from backend.app.services.pkt.extractor import pkt_extractor, PktExtractor
-from backend.app.services.pkt.analyzer import pkt_analyzer_service, PktAnalyzerService
-from backend.app.services.pkt.models import (
+from app.services.pkt.validator import validate_pkt_file, PktValidationError
+from app.services.pkt.storage import pkt_storage_service, PktStorageService
+from app.services.pkt.extractor import pkt_extractor, PktExtractor
+from app.services.pkt.analyzer import pkt_analyzer_service, PktAnalyzerService
+from app.services.pkt.models import (
     FactSource,
     ConnectionStatus,
     AnalysisStatus,

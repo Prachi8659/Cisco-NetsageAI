@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from typing import Optional
 from pydantic import BaseModel, Field
 
-from backend.app.services.pkt.models import (
+from app.services.pkt.models import (
     AnalysisStatus,
     FactSource,
     NormalizedNetworkFacts,

@@ -2,10 +2,10 @@ import datetime
 from typing import Any, Dict, List, Optional
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
-from backend.app.models.case import Case
-from backend.app.models.review import HumanReview
-from backend.app.schemas.remediation import HumanReviewCreate, RemediationConfirmInput, VerificationStatus
-from backend.app.services.rules.engine import rule_engine
+from app.models.case import Case
+from app.models.review import HumanReview
+from app.schemas.remediation import HumanReviewCreate, RemediationConfirmInput, VerificationStatus
+from app.services.rules.engine import rule_engine
 
 class RemediationVerificationService:
     """

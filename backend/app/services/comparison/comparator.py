@@ -1,8 +1,8 @@
 import re
 from typing import Optional, Tuple
-from backend.app.services.rules.models import RuleEngineResult, RuleFinding
-from backend.app.services.ai.models import AiDiagnosisResult, AiDiagnosisStatus
-from backend.app.services.comparison.models import ComparisonStatus, DiagnosisComparisonResult
+from app.services.rules.models import RuleEngineResult, RuleFinding
+from app.services.ai.models import AiDiagnosisResult, AiDiagnosisStatus
+from app.services.comparison.models import ComparisonStatus, DiagnosisComparisonResult
 
 # Mapping canonical fault terms between Python rules and AI diagnosis text
 FAULT_TYPE_CANONICAL_MAP = {

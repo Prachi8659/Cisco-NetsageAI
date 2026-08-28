@@ -1,8 +1,8 @@
 import ipaddress
 from typing import List, Dict
-from backend.app.services.pkt.models import NormalizedNetworkFacts
-from backend.app.services.rules.base import BaseRule, same_subnet
-from backend.app.services.rules.models import RuleFinding, RuleSeverity, RuleStatus
+from app.services.pkt.models import NormalizedNetworkFacts
+from app.services.rules.base import BaseRule, same_subnet
+from app.services.rules.models import RuleFinding, RuleSeverity, RuleStatus
 
 class GatewayMismatchRule(BaseRule):
     rule_id: str = "GATEWAY_MISMATCH"

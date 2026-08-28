@@ -1,18 +1,18 @@
-from backend.app.services.rules.models import (
+from app.services.rules.models import (
     RuleFinding,
     RuleEngineResult,
     RuleSeverity,
     RuleStatus,
 )
-from backend.app.services.rules.base import BaseRule
-from backend.app.services.rules.duplicate_ip import DuplicateIpRule
-from backend.app.services.rules.subnet_mask import SubnetMaskRule
-from backend.app.services.rules.gateway import GatewayMismatchRule
-from backend.app.services.rules.interface import InterfaceDownRule
-from backend.app.services.rules.vlan import MissingVlanRule
-from backend.app.services.rules.route import MissingRouteRule
-from backend.app.services.rules.connection import ConnectionInconsistencyRule
-from backend.app.services.rules.engine import RuleEngine, rule_engine
+from app.services.rules.base import BaseRule
+from app.services.rules.duplicate_ip import DuplicateIpRule
+from app.services.rules.subnet_mask import SubnetMaskRule
+from app.services.rules.gateway import GatewayMismatchRule
+from app.services.rules.interface import InterfaceDownRule
+from app.services.rules.vlan import MissingVlanRule
+from app.services.rules.route import MissingRouteRule
+from app.services.rules.connection import ConnectionInconsistencyRule
+from app.services.rules.engine import RuleEngine, rule_engine
 
 __all__ = [
     "RuleFinding",

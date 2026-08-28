@@ -1,7 +1,7 @@
 from typing import List, Set, Dict
-from backend.app.services.pkt.models import NormalizedNetworkFacts
-from backend.app.services.rules.base import BaseRule
-from backend.app.services.rules.models import RuleFinding, RuleSeverity, RuleStatus
+from app.services.pkt.models import NormalizedNetworkFacts
+from app.services.rules.base import BaseRule
+from app.services.rules.models import RuleFinding, RuleSeverity, RuleStatus
 
 class MissingVlanRule(BaseRule):
     rule_id: str = "MISSING_VLAN"

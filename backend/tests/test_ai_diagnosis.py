@@ -1,10 +1,10 @@
 import uuid
 import pytest
-from backend.app.core.config import settings
-from backend.app.models.case import Case
-from backend.app.services.ai.models import AiDiagnosisResult, AiDiagnosisStatus
-from backend.app.services.ai.service import AiDiagnosisService
-from backend.app.services.ai.providers.mock_provider import MockAiProvider
+from app.core.config import settings
+from app.models.case import Case
+from app.services.ai.models import AiDiagnosisResult, AiDiagnosisStatus
+from app.services.ai.service import AiDiagnosisService
+from app.services.ai.providers.mock_provider import MockAiProvider
 
 @pytest.fixture
 def sample_case(db_session):
@@ -37,7 +37,7 @@ def test_ai_diagnosis_interface_down_evidence(db_session, sample_case):
     mock = MockAiProvider()
     service = AiDiagnosisService(provider_override=mock)
     
-    from backend.app.models.evidence import CiscoEvidence
+    from app.models.evidence import CiscoEvidence
     ev = CiscoEvidence(
         case_id=sample_case.id,
         device="PC0",
@@ -62,7 +62,7 @@ def test_ai_diagnosis_duplicate_ip_evidence(db_session, sample_case):
     mock = MockAiProvider()
     service = AiDiagnosisService(provider_override=mock)
     
-    from backend.app.models.evidence import CiscoEvidence
+    from app.models.evidence import CiscoEvidence
     ev1 = CiscoEvidence(
         case_id=sample_case.id,
         device="PC0",
@@ -116,7 +116,7 @@ def test_invalid_ai_response_handling(db_session, sample_case):
 
     service = AiDiagnosisService(provider_override=CorruptAiProvider())
     
-    from backend.app.models.evidence import CiscoEvidence
+    from app.models.evidence import CiscoEvidence
     db_session.add(CiscoEvidence(case_id=sample_case.id, device="PC0", command="show ip route", raw_output="192.168.1.0/24"))
     db_session.commit()
 
@@ -126,7 +126,7 @@ def test_invalid_ai_response_handling(db_session, sample_case):
 
 # 7. Test Python and AI independent evaluation (Agreement)
 def test_python_and_ai_agreement(db_session, sample_case):
-    from backend.app.models.evidence import CiscoEvidence
+    from app.models.evidence import CiscoEvidence
     ev = CiscoEvidence(
         case_id=sample_case.id,
         device="PC0",
@@ -157,7 +157,7 @@ def test_python_and_ai_disagreement(db_session, sample_case):
             }
 
     service = AiDiagnosisService(provider_override=DisagreeingAiProvider())
-    from backend.app.models.evidence import CiscoEvidence
+    from app.models.evidence import CiscoEvidence
     db_session.add(CiscoEvidence(case_id=sample_case.id, device="PC0", command="show ip route", raw_output="192.168.1.0/24"))
     db_session.commit()
 

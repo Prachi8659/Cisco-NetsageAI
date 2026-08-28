@@ -1,9 +1,9 @@
 from sqlalchemy.orm import Session
-from backend.app.models.case import Case
-from backend.app.services.rules.engine import rule_engine
-from backend.app.services.ai.service import ai_diagnosis_service
-from backend.app.services.comparison.models import DiagnosisComparisonResult, ComparisonStatus
-from backend.app.services.comparison.comparator import comparator
+from app.models.case import Case
+from app.services.rules.engine import rule_engine
+from app.services.ai.service import ai_diagnosis_service
+from app.services.comparison.models import DiagnosisComparisonResult, ComparisonStatus
+from app.services.comparison.comparator import comparator
 
 class ComparisonService:
     """

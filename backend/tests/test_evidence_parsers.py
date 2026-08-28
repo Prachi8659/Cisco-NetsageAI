@@ -1,6 +1,6 @@
 import pytest
-from backend.app.services.evidence.parser_service import evidence_parser_service
-from backend.app.services.pkt.models import AnalysisStatus, FactSource
+from app.services.evidence.parser_service import evidence_parser_service
+from app.services.pkt.models import AnalysisStatus, FactSource
 
 def test_parse_show_ip_interface_brief():
     raw = """

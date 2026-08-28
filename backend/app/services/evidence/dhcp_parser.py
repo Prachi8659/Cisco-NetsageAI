@@ -1,12 +1,12 @@
 import re
-from backend.app.services.evidence.base import (
+from app.services.evidence.base import (
     BaseEvidenceParser,
     EvidenceParseResult,
     normalize_command_string,
     clean_cisco_output,
     is_valid_ipv4,
 )
-from backend.app.services.pkt.models import (
+from app.services.pkt.models import (
     AnalysisStatus,
     FactSource,
     DhcpBindingFact,

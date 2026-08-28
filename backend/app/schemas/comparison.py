@@ -1,9 +1,9 @@
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, ConfigDict, Field
-from backend.app.services.comparison.models import ComparisonStatus
-from backend.app.schemas.rules import RuleDiagnosisResponse
-from backend.app.schemas.ai import AiDiagnosisResponse
+from app.services.comparison.models import ComparisonStatus
+from app.schemas.rules import RuleDiagnosisResponse
+from app.schemas.ai import AiDiagnosisResponse
 
 class DiagnosisComparisonResponse(BaseModel):
     case_id: int

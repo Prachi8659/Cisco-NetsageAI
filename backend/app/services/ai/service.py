@@ -1,16 +1,16 @@
 from typing import Any, Dict, Optional
 from sqlalchemy.orm import Session
-from backend.app.core.config import settings
-from backend.app.models.case import Case
-from backend.app.models.evidence import CiscoEvidence
-from backend.app.services.pkt.analyzer import pkt_analyzer_service
-from backend.app.services.rules.engine import rule_engine
-from backend.app.services.ai.models import AiDiagnosisResult, AiDiagnosisStatus
-from backend.app.services.ai.base import BaseAiProvider
-from backend.app.services.ai.prompts import SYSTEM_DIAGNOSIS_PROMPT, build_case_evidence_prompt
-from backend.app.services.ai.providers.mock_provider import MockAiProvider
-from backend.app.services.ai.providers.gemini_provider import GeminiAiProvider
-from backend.app.services.ai.providers.openai_provider import OpenAiProvider
+from app.core.config import settings
+from app.models.case import Case
+from app.models.evidence import CiscoEvidence
+from app.services.pkt.analyzer import pkt_analyzer_service
+from app.services.rules.engine import rule_engine
+from app.services.ai.models import AiDiagnosisResult, AiDiagnosisStatus
+from app.services.ai.base import BaseAiProvider
+from app.services.ai.prompts import SYSTEM_DIAGNOSIS_PROMPT, build_case_evidence_prompt
+from app.services.ai.providers.mock_provider import MockAiProvider
+from app.services.ai.providers.gemini_provider import GeminiAiProvider
+from app.services.ai.providers.openai_provider import OpenAiProvider
 
 class AiDiagnosisService:
     """

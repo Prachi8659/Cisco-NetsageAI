@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from backend.app.database.session import get_db
-from backend.app.models.case import Case
-from backend.app.schemas.comparison import DiagnosisComparisonResponse
-from backend.app.services.comparison.service import comparison_service
+from app.database.session import get_db
+from app.models.case import Case
+from app.schemas.comparison import DiagnosisComparisonResponse
+from app.services.comparison.service import comparison_service
 
 router = APIRouter(tags=["Diagnosis Comparison"])
 

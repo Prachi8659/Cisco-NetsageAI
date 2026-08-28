@@ -1,8 +1,8 @@
 from collections import defaultdict
 from typing import List
-from backend.app.services.pkt.models import NormalizedNetworkFacts
-from backend.app.services.rules.base import BaseRule
-from backend.app.services.rules.models import RuleFinding, RuleSeverity, RuleStatus
+from app.services.pkt.models import NormalizedNetworkFacts
+from app.services.rules.base import BaseRule
+from app.services.rules.models import RuleFinding, RuleSeverity, RuleStatus
 
 class DuplicateIpRule(BaseRule):
     rule_id: str = "DUPLICATE_IP"

@@ -1,6 +1,6 @@
 from pathlib import Path
 from fastapi import HTTPException, status
-from backend.app.core.config import settings
+from app.core.config import settings
 
 class PktValidationError(HTTPException):
     def __init__(self, detail: str, status_code: int = status.HTTP_400_BAD_REQUEST):

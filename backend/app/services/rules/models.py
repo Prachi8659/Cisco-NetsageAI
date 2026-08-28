@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any
 from pydantic import BaseModel, Field
-from backend.app.services.pkt.models import FactSource
+from app.services.pkt.models import FactSource
 
 class RuleSeverity(str, Enum):
     LOW = "LOW"

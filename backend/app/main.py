@@ -1,9 +1,9 @@
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from backend.app.core.config import settings
-from backend.app.database.session import engine, Base
-from backend.app.api.router import api_router
+from app.core.config import settings
+from app.database.session import engine, Base
+from app.api.router import api_router
 
 # Create database tables automatically
 Base.metadata.create_all(bind=engine)

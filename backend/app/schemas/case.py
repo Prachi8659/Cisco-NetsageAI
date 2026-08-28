@@ -1,6 +1,6 @@
 from datetime import datetime
 from pydantic import BaseModel, Field, ConfigDict
-from backend.app.schemas.pkt import PktFileResponse
+from app.schemas.pkt import PktFileResponse
 
 class CaseBase(BaseModel):
     title: str = Field(..., min_length=3, max_length=255, description="Brief descriptive title of the case")

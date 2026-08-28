@@ -2,7 +2,7 @@ import io
 import zlib
 from pathlib import Path
 from fastapi import status
-from backend.app.services.pkt.models import (
+from app.services.pkt.models import (
     FactSource,
     ConnectionStatus,
     AnalysisStatus,

@@ -2,11 +2,11 @@ from pathlib import Path
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 
-from backend.app.models.case import Case
-from backend.app.models.pkt import PktFile
-from backend.app.services.pkt.extractor import pkt_extractor
-from backend.app.services.pkt.storage import pkt_storage_service
-from backend.app.services.pkt.models import PktAnalysisResult, AnalysisStatus
+from app.models.case import Case
+from app.models.pkt import PktFile
+from app.services.pkt.extractor import pkt_extractor
+from app.services.pkt.storage import pkt_storage_service
+from app.services.pkt.models import PktAnalysisResult, AnalysisStatus
 
 class PktAnalyzerService:
     def __init__(self, extractor=pkt_extractor, storage=pkt_storage_service):

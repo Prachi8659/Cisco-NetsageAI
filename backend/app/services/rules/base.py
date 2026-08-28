@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 import ipaddress
 from typing import List, Optional, Tuple
-from backend.app.services.pkt.models import NormalizedNetworkFacts
-from backend.app.services.rules.models import RuleFinding
+from app.services.pkt.models import NormalizedNetworkFacts
+from app.services.rules.models import RuleFinding
 
 def ip_in_network(ip_str: str, network_str: str, mask_str: Optional[str] = None) -> bool:
     """Check if an IP address belongs to a specific network/mask."""

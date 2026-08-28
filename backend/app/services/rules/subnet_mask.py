@@ -1,9 +1,9 @@
 import ipaddress
 from typing import List, Dict, Tuple
 from collections import defaultdict
-from backend.app.services.pkt.models import NormalizedNetworkFacts, InterfaceFact
-from backend.app.services.rules.base import BaseRule, get_network_address
-from backend.app.services.rules.models import RuleFinding, RuleSeverity, RuleStatus
+from app.services.pkt.models import NormalizedNetworkFacts, InterfaceFact
+from app.services.rules.base import BaseRule, get_network_address
+from app.services.rules.models import RuleFinding, RuleSeverity, RuleStatus
 
 class SubnetMaskRule(BaseRule):
     rule_id: str = "WRONG_SUBNET_MASK"

@@ -1,7 +1,7 @@
 import json
 import re
 from typing import Any, Dict
-from backend.app.services.ai.base import BaseAiProvider
+from app.services.ai.base import BaseAiProvider
 
 class MockAiProvider(BaseAiProvider):
     """

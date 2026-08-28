@@ -3,7 +3,7 @@ import re
 import urllib.request
 import urllib.error
 from typing import Any, Dict
-from backend.app.services.ai.base import BaseAiProvider
+from app.services.ai.base import BaseAiProvider
 
 class OpenAiProvider(BaseAiProvider):
     """OpenAI API Provider implementation."""

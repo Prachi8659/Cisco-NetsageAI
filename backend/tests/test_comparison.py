@@ -1,13 +1,13 @@
 import uuid
 import pytest
-from backend.app.core.config import settings
-from backend.app.models.case import Case
-from backend.app.models.evidence import CiscoEvidence
-from backend.app.services.rules.models import RuleEngineResult, RuleFinding, RuleSeverity, RuleStatus
-from backend.app.services.ai.models import AiDiagnosisResult, AiDiagnosisStatus
-from backend.app.services.comparison.models import ComparisonStatus
-from backend.app.services.comparison.comparator import comparator
-from backend.app.services.comparison.service import ComparisonService
+from app.core.config import settings
+from app.models.case import Case
+from app.models.evidence import CiscoEvidence
+from app.services.rules.models import RuleEngineResult, RuleFinding, RuleSeverity, RuleStatus
+from app.services.ai.models import AiDiagnosisResult, AiDiagnosisStatus
+from app.services.comparison.models import ComparisonStatus
+from app.services.comparison.comparator import comparator
+from app.services.comparison.service import ComparisonService
 
 @pytest.fixture
 def sample_case(db_session):

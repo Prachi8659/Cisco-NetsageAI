@@ -1,11 +1,11 @@
 from fastapi import APIRouter
-from backend.app.api.cases import router as cases_router
-from backend.app.api.pkt import router as pkt_router
-from backend.app.api.evidence import router as evidence_router
-from backend.app.api.rules import router as rules_router
-from backend.app.api.ai import router as ai_router
-from backend.app.api.comparison import router as comparison_router
-from backend.app.api.remediation import router as remediation_router
+from app.api.cases import router as cases_router
+from app.api.pkt import router as pkt_router
+from app.api.evidence import router as evidence_router
+from app.api.rules import router as rules_router
+from app.api.ai import router as ai_router
+from app.api.comparison import router as comparison_router
+from app.api.remediation import router as remediation_router
 
 api_router = APIRouter()
 api_router.include_router(cases_router)

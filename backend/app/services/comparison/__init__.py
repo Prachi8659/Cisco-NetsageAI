@@ -1,6 +1,6 @@
-from backend.app.services.comparison.models import ComparisonStatus, DiagnosisComparisonResult
-from backend.app.services.comparison.comparator import DiagnosisComparator, comparator
-from backend.app.services.comparison.service import ComparisonService, comparison_service
+from app.services.comparison.models import ComparisonStatus, DiagnosisComparisonResult
+from app.services.comparison.comparator import DiagnosisComparator, comparator
+from app.services.comparison.service import ComparisonService, comparison_service
 
 __all__ = [
     "ComparisonStatus",

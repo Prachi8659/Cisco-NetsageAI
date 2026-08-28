@@ -1,12 +1,18 @@
-import pytest
+import sys
 from pathlib import Path
+import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from fastapi.testclient import TestClient
 
-from backend.app.database.session import Base, get_db
-from backend.app.main import app
-from backend.app.core.config import settings
+# Ensure backend directory is in sys.path
+backend_dir = Path(__file__).resolve().parent.parent
+if str(backend_dir) not in sys.path:
+    sys.path.insert(0, str(backend_dir))
+
+from app.database.session import Base, get_db
+from app.main import app
+from app.core.config import settings
 
 # Test database in memory / isolated file
 TEST_DB_PATH = settings.BACKEND_DIR / "test_netsage.db"

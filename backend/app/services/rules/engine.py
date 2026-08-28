@@ -1,10 +1,10 @@
 from typing import List, Dict, Any
 from sqlalchemy.orm import Session
-from backend.app.models.case import Case
-from backend.app.models.pkt import PktFile
-from backend.app.models.evidence import CiscoEvidence
-from backend.app.services.pkt.analyzer import pkt_analyzer_service
-from backend.app.services.pkt.models import (
+from app.models.case import Case
+from app.models.pkt import PktFile
+from app.models.evidence import CiscoEvidence
+from app.services.pkt.analyzer import pkt_analyzer_service
+from app.services.pkt.models import (
     NormalizedNetworkFacts,
     FactSource,
     DeviceFact,
@@ -19,15 +19,15 @@ from backend.app.services.pkt.models import (
     DhcpPoolFact,
     MacEntryFact,
 )
-from backend.app.services.rules.base import BaseRule
-from backend.app.services.rules.models import RuleFinding, RuleEngineResult, RuleStatus
-from backend.app.services.rules.duplicate_ip import DuplicateIpRule
-from backend.app.services.rules.subnet_mask import SubnetMaskRule
-from backend.app.services.rules.gateway import GatewayMismatchRule
-from backend.app.services.rules.interface import InterfaceDownRule
-from backend.app.services.rules.vlan import MissingVlanRule
-from backend.app.services.rules.route import MissingRouteRule
-from backend.app.services.rules.connection import ConnectionInconsistencyRule
+from app.services.rules.base import BaseRule
+from app.services.rules.models import RuleFinding, RuleEngineResult, RuleStatus
+from app.services.rules.duplicate_ip import DuplicateIpRule
+from app.services.rules.subnet_mask import SubnetMaskRule
+from app.services.rules.gateway import GatewayMismatchRule
+from app.services.rules.interface import InterfaceDownRule
+from app.services.rules.vlan import MissingVlanRule
+from app.services.rules.route import MissingRouteRule
+from app.services.rules.connection import ConnectionInconsistencyRule
 
 class RuleEngine:
     """

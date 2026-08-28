@@ -1,5 +1,5 @@
 import pytest
-from backend.app.services.pkt.models import (
+from app.services.pkt.models import (
     NormalizedNetworkFacts,
     FactSource,
     DeviceFact,
@@ -9,15 +9,15 @@ from backend.app.services.pkt.models import (
     RouteFact,
     GatewayFact,
 )
-from backend.app.services.rules.engine import rule_engine
-from backend.app.services.rules.duplicate_ip import DuplicateIpRule
-from backend.app.services.rules.subnet_mask import SubnetMaskRule
-from backend.app.services.rules.gateway import GatewayMismatchRule
-from backend.app.services.rules.interface import InterfaceDownRule
-from backend.app.services.rules.vlan import MissingVlanRule
-from backend.app.services.rules.route import MissingRouteRule
-from backend.app.services.rules.connection import ConnectionInconsistencyRule
-from backend.app.services.rules.models import RuleStatus
+from app.services.rules.engine import rule_engine
+from app.services.rules.duplicate_ip import DuplicateIpRule
+from app.services.rules.subnet_mask import SubnetMaskRule
+from app.services.rules.gateway import GatewayMismatchRule
+from app.services.rules.interface import InterfaceDownRule
+from app.services.rules.vlan import MissingVlanRule
+from app.services.rules.route import MissingRouteRule
+from app.services.rules.connection import ConnectionInconsistencyRule
+from app.services.rules.models import RuleStatus
 
 # 1. Duplicate IP tests
 def test_duplicate_ip_detected():

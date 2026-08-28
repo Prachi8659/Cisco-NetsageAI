@@ -3,12 +3,12 @@ from pathlib import Path
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, status
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
-from backend.app.database.session import get_db
-from backend.app.models.case import Case
-from backend.app.models.pkt import PktFile
-from backend.app.schemas.pkt import PktFileResponse
-from backend.app.services.pkt.models import PktAnalysisResult
-from backend.app.services.pkt.storage import pkt_storage_service
+from app.database.session import get_db
+from app.models.case import Case
+from app.models.pkt import PktFile
+from app.schemas.pkt import PktFileResponse
+from app.services.pkt.models import PktAnalysisResult
+from app.services.pkt.storage import pkt_storage_service
 
 router = APIRouter(tags=["Packet Tracer (.pkt)"])
 
@@ -142,6 +142,6 @@ def analyze_case_pkt(
     Truthfully reports UNKNOWN / UNAVAILABLE when encryption cannot be decoded.
     Never fabricates network data.
     """
-    from backend.app.services.pkt.analyzer import pkt_analyzer_service
+    from app.services.pkt.analyzer import pkt_analyzer_service
     return pkt_analyzer_service.analyze_case_pkt(case_id=case_id, db=db)
 

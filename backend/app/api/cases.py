@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy import func
-from backend.app.database.session import get_db
-from backend.app.models.case import Case
-from backend.app.schemas.case import CaseCreate, CaseResponse, CaseUpdate
-from backend.app.services.pkt.storage import pkt_storage_service
+from app.database.session import get_db
+from app.models.case import Case
+from app.schemas.case import CaseCreate, CaseResponse, CaseUpdate
+from app.services.pkt.storage import pkt_storage_service
 
 router = APIRouter(prefix="/cases", tags=["Cases"])
 

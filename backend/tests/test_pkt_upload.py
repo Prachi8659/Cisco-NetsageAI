@@ -1,7 +1,7 @@
 import io
 from pathlib import Path
 from fastapi import status
-from backend.app.core.config import settings
+from app.core.config import settings
 
 def create_dummy_case(client):
     res = client.post("/api/cases", json={
@@ -122,7 +122,7 @@ def test_pkt_delete_valid_file(client):
     assert dl_res.status_code == status.HTTP_404_NOT_FOUND
 
 def test_pkt_delete_outside_storage_path_blocked(client, db_session):
-    from backend.app.models.pkt import PktFile
+    from app.models.pkt import PktFile
 
     case_id = create_dummy_case(client)
 

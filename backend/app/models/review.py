@@ -1,7 +1,7 @@
 import datetime
 from sqlalchemy import Column, Integer, String, Text, Boolean, DateTime, ForeignKey, JSON
 from sqlalchemy.orm import relationship
-from backend.app.database.session import Base
+from app.database.session import Base
 
 class HumanReview(Base):
     __tablename__ = "human_reviews"

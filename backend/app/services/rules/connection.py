@@ -1,7 +1,7 @@
 from typing import List, Dict, Tuple
-from backend.app.services.pkt.models import NormalizedNetworkFacts, InterfaceFact
-from backend.app.services.rules.base import BaseRule
-from backend.app.services.rules.models import RuleFinding, RuleSeverity, RuleStatus
+from app.services.pkt.models import NormalizedNetworkFacts, InterfaceFact
+from app.services.rules.base import BaseRule
+from app.services.rules.models import RuleFinding, RuleSeverity, RuleStatus
 
 class ConnectionInconsistencyRule(BaseRule):
     rule_id: str = "CONNECTION_FAULT"

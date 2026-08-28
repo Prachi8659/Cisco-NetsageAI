@@ -20,7 +20,7 @@ from dataclasses import dataclass
 from typing import Tuple, Optional
 from pathlib import Path
 
-from backend.app.services.pkt.twofish_gladman import Twofish
+from app.services.pkt.twofish_gladman import Twofish
 
 # Standard Cisco Packet Tracer Twofish-EAX constants
 PKT_TWOFISH_KEY = bytes([137] * 16)

@@ -1,4 +1,4 @@
-from backend.app.services.remediation.service import (
+from app.services.remediation.service import (
     RemediationVerificationService,
     remediation_service
 )

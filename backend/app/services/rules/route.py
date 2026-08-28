@@ -1,8 +1,8 @@
 import ipaddress
 from typing import List, Set, Dict
-from backend.app.services.pkt.models import NormalizedNetworkFacts, RouteFact
-from backend.app.services.rules.base import BaseRule
-from backend.app.services.rules.models import RuleFinding, RuleSeverity, RuleStatus
+from app.services.pkt.models import NormalizedNetworkFacts, RouteFact
+from app.services.rules.base import BaseRule
+from app.services.rules.models import RuleFinding, RuleSeverity, RuleStatus
 
 class MissingRouteRule(BaseRule):
     rule_id: str = "MISSING_ROUTE"

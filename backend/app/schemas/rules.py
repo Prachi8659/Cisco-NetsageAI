@@ -1,6 +1,6 @@
 from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field
-from backend.app.services.rules.models import RuleFinding, RuleSeverity, RuleStatus
+from app.services.rules.models import RuleFinding, RuleSeverity, RuleStatus
 
 class RuleDiagnosisResponse(BaseModel):
     case_id: int

@@ -1,10 +1,10 @@
 import uuid
 import pytest
-from backend.app.models.case import Case
-from backend.app.models.evidence import CiscoEvidence
-from backend.app.models.review import HumanReview
-from backend.app.schemas.remediation import HumanReviewCreate, RemediationConfirmInput, ReviewDecision, VerificationStatus
-from backend.app.services.remediation.service import remediation_service
+from app.models.case import Case
+from app.models.evidence import CiscoEvidence
+from app.models.review import HumanReview
+from app.schemas.remediation import HumanReviewCreate, RemediationConfirmInput, ReviewDecision, VerificationStatus
+from app.services.remediation.service import remediation_service
 
 @pytest.fixture
 def sample_case(db_session):

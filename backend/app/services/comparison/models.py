@@ -2,8 +2,8 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, ConfigDict, Field
-from backend.app.services.rules.models import RuleEngineResult
-from backend.app.services.ai.models import AiDiagnosisResult
+from app.services.rules.models import RuleEngineResult
+from app.services.ai.models import AiDiagnosisResult
 
 class ComparisonStatus(str, Enum):
     AGREEMENT = "AGREEMENT"

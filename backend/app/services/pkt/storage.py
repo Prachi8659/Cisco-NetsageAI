@@ -1,8 +1,8 @@
 from pathlib import Path
 from fastapi import UploadFile, HTTPException, status
-from backend.app.core.config import settings
-from backend.app.core.security import sanitize_filename, generate_safe_storage_filename, calculate_sha256
-from backend.app.services.pkt.validator import validate_pkt_file
+from app.core.config import settings
+from app.core.security import sanitize_filename, generate_safe_storage_filename, calculate_sha256
+from app.services.pkt.validator import validate_pkt_file
 
 class PktStorageService:
     def __init__(self, storage_dir: Path = settings.PKT_STORAGE_DIR):

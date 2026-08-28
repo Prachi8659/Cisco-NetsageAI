@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import List, Optional
 from pydantic import BaseModel, ConfigDict, Field
-from backend.app.services.ai.models import AiDiagnosisStatus
+from app.services.ai.models import AiDiagnosisStatus
 
 class AiDiagnosisResponse(BaseModel):
     case_id: int
