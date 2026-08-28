@@ -1,11 +1,12 @@
 import json
-import httpx
+from fastapi.testclient import TestClient
+from backend.app.main import app
 
-API_BASE = "http://localhost:8000/api"
+client = TestClient(app)
 
 def run_integration_test():
     print("=== 1. Testing Case #2 with Real Modern 45KB Encrypted .PKT File ===")
-    res1 = httpx.post(f"{API_BASE}/cases/2/pkt/analyze")
+    res1 = client.post("/api/cases/2/pkt/analyze")
     print(f"Status Code: {res1.status_code}")
     data1 = res1.json()
     print(f"Analysis Status: {data1['status']}")
@@ -32,7 +33,7 @@ def run_integration_test():
     print("[PASS] Real Modern Encrypted .PKT test PASSED (Successfully Decoded, 100% Real Facts)\n")
 
     print("=== 2. Testing Case with Uncompressed/XML .PKT Topology File ===")
-    case_res = httpx.post(f"{API_BASE}/cases", json={
+    case_res = client.post("/api/cases", json={
         "title": "VLAN 10 Subnet Topology Analysis",
         "category": "VLAN",
         "severity": "HIGH",
@@ -107,11 +108,12 @@ def run_integration_test():
     </LINKS>
 </PACKETTRACER5_SAVED_NETWORK>"""
 
-    files = {"file": ("vlan10_lab_topology.pkt", xml_content, "application/octet-stream")}
-    up_res = httpx.post(f"{API_BASE}/cases/{case_id}/pkt", files=files)
+    import io
+    files = {"file": ("vlan10_lab_topology.pkt", io.BytesIO(xml_content), "application/octet-stream")}
+    up_res = client.post(f"/api/cases/{case_id}/pkt", files=files)
     print(f"Uploaded PKT Status: {up_res.status_code}")
 
-    ana_res = httpx.post(f"{API_BASE}/cases/{case_id}/pkt/analyze")
+    ana_res = client.post(f"/api/cases/{case_id}/pkt/analyze")
     print(f"Analyze Status Code: {ana_res.status_code}")
     data2 = ana_res.json()
     print(f"Analysis Status: {data2['status']}")

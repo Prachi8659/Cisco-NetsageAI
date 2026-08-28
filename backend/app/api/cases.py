@@ -4,6 +4,7 @@ from sqlalchemy import func
 from backend.app.database.session import get_db
 from backend.app.models.case import Case
 from backend.app.schemas.case import CaseCreate, CaseResponse, CaseUpdate
+from backend.app.services.pkt.storage import pkt_storage_service
 
 router = APIRouter(prefix="/cases", tags=["Cases"])
 
@@ -101,13 +102,23 @@ def delete_case(
     case_id: int,
     db: Session = Depends(get_db)
 ):
-    """Delete a case and all associated files."""
+    """Delete a case and all associated files and evidence."""
     case = db.query(Case).filter(Case.id == case_id).first()
     if not case:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Troubleshooting case #{case_id} not found."
         )
+
+    # Clean up physical .pkt file if present on storage
+    if case.pkt_file:
+        try:
+            file_path = pkt_storage_service.get_file_path(case.pkt_file.pkt_storage_path)
+            if file_path.exists():
+                file_path.unlink()
+        except Exception:
+            pass
+
     db.delete(case)
     db.commit()
     return None

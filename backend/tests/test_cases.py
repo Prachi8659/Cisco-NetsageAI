@@ -39,3 +39,26 @@ def test_list_cases(client):
 def test_get_nonexistent_case(client):
     res = client.get("/api/cases/99999")
     assert res.status_code == status.HTTP_404_NOT_FOUND
+
+def test_delete_case(client):
+    # Create case to delete
+    create_res = client.post("/api/cases", json={
+        "title": "Case to Delete",
+        "category": "General",
+        "severity": "LOW",
+        "symptom": "Temporary test case for deletion"
+    })
+    assert create_res.status_code == status.HTTP_201_CREATED
+    case_id = create_res.json()["id"]
+
+    # Delete case
+    del_res = client.delete(f"/api/cases/{case_id}")
+    assert del_res.status_code == status.HTTP_204_NO_CONTENT
+
+    # Verify case no longer exists
+    get_res = client.get(f"/api/cases/{case_id}")
+    assert get_res.status_code == status.HTTP_404_NOT_FOUND
+
+def test_delete_nonexistent_case(client):
+    del_res = client.delete("/api/cases/99999")
+    assert del_res.status_code == status.HTTP_404_NOT_FOUND

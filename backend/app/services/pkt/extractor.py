@@ -1,7 +1,7 @@
 import re
 import xml.etree.ElementTree as ET
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Set, Tuple
 
 from backend.app.services.pkt.models import (
     FactSource,
@@ -24,6 +24,7 @@ class PktExtractor:
     Modular Cisco Packet Tracer (.pkt / .pka) file extractor.
     Extracts real topologies from modern (PT 7.x-9.x), legacy (PT 5.x-6.x), and XML Packet Tracer files.
     Truthfully reports UNKNOWN / UNAVAILABLE when proprietary encryption cannot be decoded.
+    Distinguishes Network Devices from Non-Network / Infrastructure Objects.
     Never fabricates network topology or configuration data.
     """
 
@@ -132,7 +133,10 @@ class PktExtractor:
                 or "Unknown_Device"
             ).strip()
 
-            engine = dev_elem.find("ENGINE") or dev_elem
+            engine = dev_elem.find("ENGINE")
+            if engine is None:
+                engine = dev_elem
+
             engine_type = engine.find("TYPE")
             raw_type = "Unknown"
             model = None
@@ -140,7 +144,7 @@ class PktExtractor:
             if engine_type is not None:
                 raw_type = (engine_type.text or "").strip()
                 model = engine_type.get("customModel") or engine_type.get("model") or None
-            
+
             if not raw_type or raw_type == "Unknown":
                 raw_type = (
                     dev_elem.findtext(".//TYPE")
@@ -158,7 +162,7 @@ class PktExtractor:
                     or None
                 )
 
-            norm_type = self._classify_device_type(raw_type, name)
+            norm_type, is_net_dev, category = self._classify_device_type(raw_type, name)
 
             # Map save-ref-id to device name
             save_ref = dev_elem.findtext(".//SAVE_REF_ID") or dev_elem.findtext("SAVE_REF_ID")
@@ -178,6 +182,8 @@ class PktExtractor:
                     device_type=norm_type,
                     model=model,
                     hostname=name,
+                    is_network_device=is_net_dev,
+                    category=category,
                     source=FactSource.PKT_EXTRACTED,
                 )
             )
@@ -200,7 +206,9 @@ class PktExtractor:
                 )
 
             # Device VLANs (e.g. from <VLANS><VLAN ... />)
-            vlan_container = dev_elem.find(".//VLANS") or dev_elem.find("VLANS")
+            vlan_container = dev_elem.find(".//VLANS")
+            if vlan_container is None:
+                vlan_container = dev_elem.find("VLANS")
             if vlan_container is not None:
                 for v_elem in vlan_container.findall("VLAN"):
                     v_num = v_elem.get("number") or v_elem.findtext("NUMBER")
@@ -218,102 +226,6 @@ class PktExtractor:
                                 )
                             )
 
-            # Interfaces / Ports
-            port_nodes = (
-                dev_elem.findall(".//PORT")
-                or dev_elem.findall(".//port")
-                or dev_elem.findall(".//INTERFACE")
-                or dev_elem.findall(".//interface")
-            )
-
-            port_counter = 0
-            for port_elem in port_nodes:
-                p_name = (
-                    port_elem.findtext("NAME")
-                    or port_elem.findtext("name")
-                    or port_elem.get("name")
-                )
-                p_type = port_elem.findtext("TYPE") or port_elem.findtext("type") or ""
-
-                if not p_name:
-                    # Synthesize clean port name based on hardware type and index
-                    if "gigabit" in p_type.lower():
-                        p_name = f"GigabitEthernet0/{port_counter + 1}"
-                    elif "fastethernet" in p_type.lower() or "copper" in p_type.lower():
-                        if norm_type == "PC" or norm_type == "Server":
-                            p_name = f"FastEthernet{port_counter}"
-                        else:
-                            p_name = f"FastEthernet0/{port_counter + 1}"
-                    elif "bluetooth" in p_type.lower():
-                        p_name = f"Bluetooth{port_counter}"
-                    elif "serial" in p_type.lower():
-                        p_name = f"Serial0/{port_counter}/0"
-                    else:
-                        p_name = f"Port{port_counter + 1}"
-                
-                port_counter += 1
-
-                ip = (
-                    port_elem.findtext("IP")
-                    or port_elem.findtext("ip")
-                    or port_elem.findtext("IP_ADDRESS")
-                    or port_elem.findtext("ip_address")
-                )
-                mask = (
-                    port_elem.findtext("SUBNET_MASK")
-                    or port_elem.findtext("subnet_mask")
-                    or port_elem.findtext("SUBNET")
-                    or port_elem.findtext("subnet")
-                    or port_elem.findtext("mask")
-                )
-                mac = (
-                    port_elem.findtext("MACADDRESS")
-                    or port_elem.findtext("mac_address")
-                    or port_elem.findtext("MAC")
-                )
-                status_val = (
-                    port_elem.findtext("STATUS")
-                    or port_elem.findtext("status")
-                    or port_elem.findtext("ADMIN_STATUS")
-                    or "up"
-                )
-                proto_val = (
-                    port_elem.findtext("PROTOCOL_STATUS")
-                    or port_elem.findtext("protocol")
-                    or "up"
-                )
-                vlan_str = port_elem.findtext("VLAN") or port_elem.findtext("vlan")
-
-                vlan_id = None
-                if vlan_str and vlan_str.strip().isdigit():
-                    vlan_id = int(vlan_str.strip())
-                    if not any(v.vlan_id == vlan_id and v.device == name for v in vlans):
-                        vlans.append(
-                            VlanFact(
-                                vlan_id=vlan_id,
-                                name=f"VLAN_{vlan_id}",
-                                device=name,
-                                source=FactSource.PKT_EXTRACTED,
-                            )
-                        )
-
-                clean_ip = ip.strip() if ip and ip.strip() and ip.strip() != "0.0.0.0" else None
-                clean_mask = mask.strip() if mask and mask.strip() and mask.strip() != "0.0.0.0" else None
-
-                interfaces.append(
-                    InterfaceFact(
-                        device=name,
-                        name=p_name.strip(),
-                        ip=clean_ip,
-                        mask=clean_mask,
-                        status=status_val.strip().lower(),
-                        protocol=proto_val.strip().lower(),
-                        vlan_id=vlan_id,
-                        mac_address=mac.strip() if mac else None,
-                        source=FactSource.PKT_EXTRACTED,
-                    )
-                )
-
         # 2. Extract Physical & Logical Connections (Links)
         link_nodes = (
             root.findall(".//LINK")
@@ -322,13 +234,19 @@ class PktExtractor:
             or root.findall(".//connection")
         )
 
+        connected_endpoints: Set[Tuple[str, str]] = set()
+
         for link_elem in link_nodes:
-            # Check modern Packet Tracer <CABLE> structure
-            cable = link_elem.find("CABLE") or link_elem.find("cable")
+            cable = link_elem.find("CABLE")
+            if cable is None:
+                cable = link_elem.find("cable")
+
             if cable is not None:
                 from_ref = (cable.findtext("FROM") or cable.findtext("from") or "").strip()
                 to_ref = (cable.findtext("TO") or cable.findtext("to") or "").strip()
-                c_ports = cable.findall("PORT") or cable.findall("port")
+                c_ports = cable.findall("PORT")
+                if len(c_ports) == 0:
+                    c_ports = cable.findall("port")
 
                 dev_a = ref_map.get(from_ref, from_ref)
                 dev_b = ref_map.get(to_ref, to_ref)
@@ -387,8 +305,162 @@ class PktExtractor:
                         source=FactSource.PKT_EXTRACTED,
                     )
                 )
+                connected_endpoints.add((dev_a.lower(), port_a.lower()))
+                connected_endpoints.add((dev_b.lower(), port_b.lower()))
 
-        # 3. Extract Routes
+        # 3. Extract Interfaces / Ports with accurate status and connection state
+        for dev_elem in device_nodes:
+            name = (
+                dev_elem.findtext(".//NAME")
+                or dev_elem.findtext("NAME")
+                or dev_elem.findtext(".//name")
+                or dev_elem.findtext("name")
+                or dev_elem.get("name")
+                or "Unknown_Device"
+            ).strip()
+
+            # Find matching DeviceFact
+            dev_fact = next((d for d in devices if d.name == name), None)
+            norm_type = dev_fact.device_type if dev_fact else "Unknown"
+
+            port_nodes = (
+                dev_elem.findall(".//PORT")
+                or dev_elem.findall(".//port")
+                or dev_elem.findall(".//INTERFACE")
+                or dev_elem.findall(".//interface")
+            )
+
+            port_counter = 0
+            for port_elem in port_nodes:
+                p_name = (
+                    port_elem.findtext("NAME")
+                    or port_elem.findtext("name")
+                    or port_elem.get("name")
+                )
+                p_type = port_elem.findtext("TYPE") or port_elem.findtext("type") or ""
+
+                if not p_name:
+                    # Synthesize clean port name based on hardware type and index
+                    if "gigabit" in p_type.lower():
+                        p_name = f"GigabitEthernet0/{port_counter + 1}"
+                    elif "fastethernet" in p_type.lower() or "copper" in p_type.lower():
+                        if norm_type == "PC" or norm_type == "Server":
+                            p_name = f"FastEthernet{port_counter}"
+                        else:
+                            p_name = f"FastEthernet0/{port_counter + 1}"
+                    elif "bluetooth" in p_type.lower():
+                        p_name = f"Bluetooth{port_counter}"
+                    elif "serial" in p_type.lower():
+                        p_name = f"Serial0/{port_counter}/0"
+                    else:
+                        p_name = f"Port{port_counter + 1}"
+
+                port_counter += 1
+                clean_p_name = p_name.strip()
+
+                ip = (
+                    port_elem.findtext("IP")
+                    or port_elem.findtext("ip")
+                    or port_elem.findtext("IP_ADDRESS")
+                    or port_elem.findtext("ip_address")
+                )
+                mask = (
+                    port_elem.findtext("SUBNET_MASK")
+                    or port_elem.findtext("subnet_mask")
+                    or port_elem.findtext("SUBNET")
+                    or port_elem.findtext("subnet")
+                    or port_elem.findtext("mask")
+                )
+                mac = (
+                    port_elem.findtext("MACADDRESS")
+                    or port_elem.findtext("mac_address")
+                    or port_elem.findtext("MAC")
+                )
+                power_val = (
+                    port_elem.findtext("POWER")
+                    or port_elem.findtext("power")
+                )
+                explicit_status = (
+                    port_elem.findtext("STATUS")
+                    or port_elem.findtext("status")
+                    or port_elem.findtext("ADMIN_STATUS")
+                )
+                explicit_proto = (
+                    port_elem.findtext("PROTOCOL_STATUS")
+                    or port_elem.findtext("protocol")
+                )
+                vlan_str = port_elem.findtext("VLAN") or port_elem.findtext("vlan")
+
+                vlan_id = None
+                if vlan_str and vlan_str.strip().isdigit():
+                    vlan_id = int(vlan_str.strip())
+                    if not any(v.vlan_id == vlan_id and v.device == name for v in vlans):
+                        vlans.append(
+                            VlanFact(
+                                vlan_id=vlan_id,
+                                name=f"VLAN_{vlan_id}",
+                                device=name,
+                                source=FactSource.PKT_EXTRACTED,
+                            )
+                        )
+
+                clean_ip = ip.strip() if ip and ip.strip() and ip.strip() != "0.0.0.0" else None
+                clean_mask = mask.strip() if mask and mask.strip() and mask.strip() != "0.0.0.0" else None
+
+                # Check physical connection state
+                is_physically_connected = (name.lower(), clean_p_name.lower()) in connected_endpoints
+
+                # Determine accurate operational and administrative status
+                # 1. Check if administratively disabled / power off
+                if power_val and power_val.strip().lower() == "false":
+                    status_str = "ADMINISTRATIVELY_DOWN"
+                    proto_str = "DOWN"
+                elif explicit_status:
+                    raw_s = explicit_status.strip().upper()
+                    if raw_s in ["UP", "DOWN", "ADMINISTRATIVELY_DOWN", "UNKNOWN"]:
+                        status_str = raw_s
+                    elif "admin" in raw_s.lower():
+                        status_str = "ADMINISTRATIVELY_DOWN"
+                    elif "up" in raw_s.lower():
+                        status_str = "UP"
+                    else:
+                        status_str = "DOWN"
+                    
+                    if explicit_proto:
+                        proto_str = explicit_proto.strip().upper()
+                    else:
+                        proto_str = "UP" if status_str == "UP" and is_physically_connected else "DOWN"
+                else:
+                    # No explicit status tag provided in XML
+                    if is_physically_connected:
+                        # Interface has an active physical link
+                        status_str = "UP"
+                        proto_str = "UP"
+                    elif clean_ip:
+                        # Interface has IP assigned (e.g. host loopback/virtual), status is UP
+                        status_str = "UP"
+                        proto_str = "UP"
+                    else:
+                        # Interface exists on hardware (e.g. unused switchport/router port), but is not connected
+                        status_str = "DOWN"
+                        proto_str = "DOWN"
+
+                interfaces.append(
+                    InterfaceFact(
+                        device=name,
+                        name=clean_p_name,
+                        ip=clean_ip,
+                        mask=clean_mask,
+                        status=status_str,
+                        protocol=proto_str,
+                        vlan_id=vlan_id,
+                        mac_address=mac.strip() if mac else None,
+                        is_connected=is_physically_connected,
+                        source=FactSource.PKT_EXTRACTED,
+                    )
+                )
+
+        # 4. Extract Routes
         route_nodes = root.findall(".//ROUTE") or root.findall(".//route")
         for route_elem in route_nodes:
             r_dev = route_elem.findtext("DEVICE") or route_elem.get("device") or "Router"
@@ -420,6 +492,9 @@ class PktExtractor:
             source=FactSource.PKT_EXTRACTED,
         )
 
+        network_devices = [d for d in devices if d.is_network_device]
+        infra_devices = [d for d in devices if not d.is_network_device]
+
         status = AnalysisStatus.SUCCESS if len(devices) > 0 else AnalysisStatus.PARTIAL
         if len(devices) == 0:
             warnings.append("No active device nodes found in the Packet Tracer XML tree.")
@@ -432,7 +507,10 @@ class PktExtractor:
             unsupported_fields=[],
             extraction_details={
                 "device_count": len(devices),
+                "network_device_count": len(network_devices),
+                "infrastructure_count": len(infra_devices),
                 "interface_count": len(interfaces),
+                "connected_interface_count": len([i for i in interfaces if i.is_connected]),
                 "connection_count": len(connections),
                 "vlan_count": len(vlans),
                 "route_count": len(routes),
@@ -441,24 +519,55 @@ class PktExtractor:
             },
         )
 
-    def _classify_device_type(self, raw_type: str, name: str) -> str:
-        """Classify device into standard Router, Switch, PC, Server, AccessPoint, or Unknown."""
+    def _classify_device_type(self, raw_type: str, name: str) -> Tuple[str, bool, str]:
+        """
+        Classify device into:
+        1. Device Type Name (Router, Switch, PC, Server, AccessPoint, Firewall, Infrastructure, or Unknown)
+        2. is_network_device (bool)
+        3. category (NETWORK_DEVICE or INFRASTRUCTURE_OBJECT)
+        """
         t = raw_type.lower()
         n = name.lower()
 
-        if "router" in t or "2911" in t or "2901" in t or "1941" in t or "2811" in t or "isr" in t or n.startswith("r"):
-            return "Router"
-        if "switch" in t or "2960" in t or "3560" in t or "3650" in t or n.startswith("s") or n.startswith("sw"):
-            return "Switch"
-        if "pc" in t or "desktop" in t or "workstation" in t or n.startswith("pc") or n.startswith("host"):
-            return "PC"
-        if "server" in t or n.startswith("srv") or n.startswith("server"):
-            return "Server"
-        if "accesspoint" in t or "ap" in t or "wireless" in t:
-            return "AccessPoint"
-        if "power distribution" in t:
-            return "PowerDistribution"
-        return "Unknown"
+        # Non-network / Infrastructure Objects
+        if (
+            "power distribution" in t
+            or "power_distribution" in t
+            or "powerdistribution" in t
+            or "solar panel" in t
+            or "battery" in t
+            or "mcu" in t
+            or "sbc" in t
+            or "smart " in t
+            or "appliance" in t
+            or "sensor" in t
+            or "actuator" in t
+            or "lamp" in t
+            or "door" in t
+            or "fan" in t
+            or "board" in t
+            or "rack" in t
+            or "table" in t
+        ):
+            return "INFRASTRUCTURE_OBJECT", False, "INFRASTRUCTURE_OBJECT"
+
+        # Network Devices
+        if "router" in t or "2911" in t or "2901" in t or "1941" in t or "2811" in t or "isr" in t or (n.startswith("r") and len(n) <= 4 and n[1:].isdigit()):
+            return "Router", True, "NETWORK_DEVICE"
+        if "switch" in t or "2960" in t or "3560" in t or "3650" in t or "catalyst" in t or (n.startswith("s") and len(n) <= 4 and n[1:].isdigit()) or (n.startswith("sw") and len(n) <= 5 and n[2:].isdigit()):
+            return "Switch", True, "NETWORK_DEVICE"
+        if "pc" in t or "desktop" in t or "workstation" in t or (n.startswith("pc") and len(n) <= 5 and n[2:].isdigit()) or (n.startswith("host") and len(n) <= 6 and n[4:].isdigit()):
+            return "PC", True, "NETWORK_DEVICE"
+        if "server" in t or (n.startswith("srv") and len(n) <= 5 and n[3:].isdigit()) or (n.startswith("server") and len(n) <= 8 and n[6:].isdigit()):
+            return "Server", True, "NETWORK_DEVICE"
+        if "accesspoint" in t or "access point" in t or "ap" in t or "wireless" in t:
+            return "AccessPoint", True, "NETWORK_DEVICE"
+        if "firewall" in t or "asa" in t or "security" in t:
+            return "Firewall", True, "NETWORK_DEVICE"
+        if "hub" in t or "repeater" in t:
+            return "Hub", True, "NETWORK_DEVICE"
+
+        return "Unknown", True, "NETWORK_DEVICE"
 
 
 pkt_extractor = PktExtractor()

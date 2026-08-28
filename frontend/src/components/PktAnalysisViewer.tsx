@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import type { PktAnalysisResult, FactSource, AnalysisStatus } from '../types';
 import { apiService } from '../services/api';
+import { formatApiError } from '../utils/error';
 
 interface PktAnalysisViewerProps {
   caseId: number | string;
@@ -45,9 +46,8 @@ export const PktAnalysisViewer: React.FC<PktAnalysisViewerProps> = ({
       if (onAnalysisComplete) {
         onAnalysisComplete(res);
       }
-    } catch (err: any) {
-      const detail = err.response?.data?.detail || err.message || 'Failed to analyze .pkt file.';
-      setError(detail);
+    } catch (err: unknown) {
+      setError(formatApiError(err, 'Failed to analyze .pkt file.'));
     } finally {
       setAnalyzing(false);
     }
@@ -199,7 +199,12 @@ export const PktAnalysisViewer: React.FC<PktAnalysisViewerProps> = ({
                   }`}
                 >
                   <Server className="w-3.5 h-3.5" />
-                  <span>Devices ({facts.devices.length})</span>
+                  <span>
+                    Network Devices ({facts.devices.filter(d => d.is_network_device !== false).length}
+                    {facts.devices.some(d => d.is_network_device === false)
+                      ? ` + ${facts.devices.filter(d => d.is_network_device === false).length} Infra`
+                      : ''})
+                  </span>
                 </button>
 
                 <button
@@ -273,7 +278,7 @@ export const PktAnalysisViewer: React.FC<PktAnalysisViewerProps> = ({
                     <thead className="bg-slate-950 text-slate-400 font-bold uppercase text-[10px]">
                       <tr>
                         <th className="p-2.5 border-b border-slate-800">Device Name</th>
-                        <th className="p-2.5 border-b border-slate-800">Type</th>
+                        <th className="p-2.5 border-b border-slate-800">Classification</th>
                         <th className="p-2.5 border-b border-slate-800">Model</th>
                         <th className="p-2.5 border-b border-slate-800">Default Gateway</th>
                         <th className="p-2.5 border-b border-slate-800">Source</th>
@@ -282,10 +287,19 @@ export const PktAnalysisViewer: React.FC<PktAnalysisViewerProps> = ({
                     <tbody className="divide-y divide-slate-800/80 text-slate-200 font-mono text-[11px]">
                       {facts.devices.map((dev, idx) => {
                         const gw = facts.gateways.find(g => g.device === dev.name)?.gateway_ip;
+                        const isNetwork = dev.is_network_device !== false;
                         return (
                           <tr key={idx} className="hover:bg-slate-800/30">
                             <td className="p-2.5 font-bold text-cyan-300">{dev.name}</td>
-                            <td className="p-2.5 text-slate-300">{dev.device_type}</td>
+                            <td className="p-2.5">
+                              <span className={`px-2 py-0.5 text-[10px] font-bold rounded ${
+                                isNetwork
+                                  ? 'bg-cyan-950/80 text-cyan-300 border border-cyan-500/30'
+                                  : 'bg-amber-950/80 text-amber-300 border border-amber-500/30'
+                              }`}>
+                                {isNetwork ? `Network: ${dev.device_type}` : 'Infrastructure Object'}
+                              </span>
+                            </td>
                             <td className="p-2.5 text-slate-400">{dev.model || 'Generic'}</td>
                             <td className="p-2.5 text-amber-300">{gw || 'N/A'}</td>
                             <td className="p-2.5">
@@ -311,33 +325,49 @@ export const PktAnalysisViewer: React.FC<PktAnalysisViewerProps> = ({
                         <th className="p-2.5 border-b border-slate-800">Interface</th>
                         <th className="p-2.5 border-b border-slate-800">IP Address</th>
                         <th className="p-2.5 border-b border-slate-800">Subnet Mask</th>
+                        <th className="p-2.5 border-b border-slate-800">Physical Link</th>
                         <th className="p-2.5 border-b border-slate-800">Status</th>
                         <th className="p-2.5 border-b border-slate-800">VLAN</th>
                         <th className="p-2.5 border-b border-slate-800">Source</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-800/80 text-slate-200 font-mono text-[11px]">
-                      {facts.interfaces.map((intf, idx) => (
-                        <tr key={idx} className="hover:bg-slate-800/30">
-                          <td className="p-2.5 font-bold text-blue-300">{intf.device}</td>
-                          <td className="p-2.5 text-slate-200">{intf.name}</td>
-                          <td className="p-2.5 text-cyan-300">{intf.ip || 'unassigned'}</td>
-                          <td className="p-2.5 text-slate-400">{intf.mask || 'unassigned'}</td>
-                          <td className="p-2.5">
-                            <span className={`px-1.5 py-0.5 text-[9px] font-bold rounded ${
-                              intf.status.toLowerCase() === 'up' ? 'bg-emerald-950 text-emerald-300' : 'bg-rose-950 text-rose-300'
-                            }`}>
-                              {intf.status}
-                            </span>
-                          </td>
-                          <td className="p-2.5 text-indigo-300">{intf.vlan_id ? `VLAN ${intf.vlan_id}` : '—'}</td>
-                          <td className="p-2.5">
-                            <span className={`px-1.5 py-0.5 text-[9px] font-bold rounded border ${getSourceBadge(intf.source)}`}>
-                              {intf.source}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
+                      {facts.interfaces.map((intf, idx) => {
+                        const statusUpper = intf.status.toUpperCase();
+                        let statusColor = 'bg-slate-800 text-slate-300 border border-slate-700';
+                        if (statusUpper === 'UP') statusColor = 'bg-emerald-950 text-emerald-300 border border-emerald-500/40';
+                        else if (statusUpper === 'DOWN') statusColor = 'bg-rose-950 text-rose-300 border border-rose-500/40';
+                        else if (statusUpper === 'ADMINISTRATIVELY_DOWN') statusColor = 'bg-amber-950 text-amber-300 border border-amber-500/40';
+
+                        return (
+                          <tr key={idx} className="hover:bg-slate-800/30">
+                            <td className="p-2.5 font-bold text-blue-300">{intf.device}</td>
+                            <td className="p-2.5 text-slate-200">{intf.name}</td>
+                            <td className="p-2.5 text-cyan-300">{intf.ip || 'unassigned'}</td>
+                            <td className="p-2.5 text-slate-400">{intf.mask || 'unassigned'}</td>
+                            <td className="p-2.5">
+                              <span className={`px-1.5 py-0.5 text-[9px] font-bold rounded ${
+                                intf.is_connected
+                                  ? 'bg-blue-950 text-blue-300 border border-blue-500/40'
+                                  : 'bg-slate-900 text-slate-400 border border-slate-800'
+                              }`}>
+                                {intf.is_connected ? 'Connected' : 'Not Connected'}
+                              </span>
+                            </td>
+                            <td className="p-2.5">
+                              <span className={`px-1.5 py-0.5 text-[9px] font-bold rounded ${statusColor}`}>
+                                {intf.status}
+                              </span>
+                            </td>
+                            <td className="p-2.5 text-indigo-300">{intf.vlan_id ? `VLAN ${intf.vlan_id}` : '—'}</td>
+                            <td className="p-2.5">
+                              <span className={`px-1.5 py-0.5 text-[9px] font-bold rounded border ${getSourceBadge(intf.source)}`}>
+                                {intf.source}
+                              </span>
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>

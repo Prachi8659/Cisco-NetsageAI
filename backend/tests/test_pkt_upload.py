@@ -1,4 +1,5 @@
 import io
+from pathlib import Path
 from fastapi import status
 from backend.app.core.config import settings
 
@@ -90,3 +91,67 @@ def test_pkt_download_and_integrity(client):
     assert download_res.status_code == status.HTTP_200_OK
     assert download_res.content == pkt_bytes
     assert 'filename="final_topology.pkt"' in download_res.headers.get("content-disposition", "")
+
+def test_pkt_delete_valid_file(client):
+    case_id = create_dummy_case(client)
+
+    pkt_bytes = b"CISCO_PACKET_TRACER_FILE_TO_BE_DELETED"
+    file_payload = ("delete_me.pkt", io.BytesIO(pkt_bytes), "application/octet-stream")
+
+    upload_res = client.post(
+        f"/api/cases/{case_id}/pkt",
+        files={"file": file_payload}
+    )
+    assert upload_res.status_code == status.HTTP_201_CREATED
+    data = upload_res.json()
+    storage_path = Path(data["pkt_storage_path"])
+    assert storage_path.exists()
+
+    # Delete PKT file
+    delete_res = client.delete(f"/api/cases/{case_id}/pkt")
+    assert delete_res.status_code == status.HTTP_204_NO_CONTENT
+
+    # Assert file on disk is removed
+    assert not storage_path.exists()
+
+    # Assert metadata & download return 404
+    meta_res = client.get(f"/api/cases/{case_id}/pkt")
+    assert meta_res.status_code == status.HTTP_404_NOT_FOUND
+
+    dl_res = client.get(f"/api/cases/{case_id}/pkt/download")
+    assert dl_res.status_code == status.HTTP_404_NOT_FOUND
+
+def test_pkt_delete_outside_storage_path_blocked(client, db_session):
+    from backend.app.models.pkt import PktFile
+
+    case_id = create_dummy_case(client)
+
+    # Create a sensitive file outside PKT_STORAGE_DIR
+    outside_file = settings.BACKEND_DIR / "sensitive_outside_file.txt"
+    outside_file.write_text("SENSITIVE DATA")
+
+    try:
+        # Create a PktFile record pointing directly to the outside file
+        malicious_pkt = PktFile(
+            case_id=case_id,
+            pkt_filename="malicious.pkt",
+            pkt_storage_path=str(outside_file.resolve()),
+            pkt_file_size=len("SENSITIVE DATA"),
+            pkt_upload_status="STORED",
+            sha256_hash="dummyhash"
+        )
+        db_session.add(malicious_pkt)
+        db_session.commit()
+
+        # Attempt to delete via API
+        delete_res = client.delete(f"/api/cases/{case_id}/pkt")
+        assert delete_res.status_code == status.HTTP_403_FORBIDDEN
+        assert "Access denied" in delete_res.json()["detail"]
+
+        # Ensure the outside file was NOT deleted
+        assert outside_file.exists()
+        assert outside_file.read_text() == "SENSITIVE DATA"
+    finally:
+        if outside_file.exists():
+            outside_file.unlink()
+

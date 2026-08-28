@@ -6,12 +6,16 @@ import {
   FileCode2, 
   FolderKanban, 
   ShieldAlert, 
-  RefreshCw
+  RefreshCw,
+  Trash2,
+  AlertTriangle,
+  X
 } from 'lucide-react';
 import type { Case } from '../types';
 import { apiService } from '../services/api';
 import { CaseCard } from '../components/CaseCard';
 import { SafetyNotice } from '../components/SafetyNotice';
+import { formatApiError } from '../utils/error';
 
 const CATEGORIES = ['All', 'VLAN', 'Routing', 'Gateway', 'DHCP', 'ACL', 'NAT', 'Interface', 'General'];
 
@@ -22,14 +26,19 @@ export const CasesPage: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
 
+  // Delete Confirmation State
+  const [caseToDelete, setCaseToDelete] = useState<Case | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
   const fetchCases = async () => {
     try {
       setLoading(true);
       setError(null);
       const data = await apiService.getCases();
       setCases(data);
-    } catch (err: any) {
-      setError(err.response?.data?.detail || err.message || 'Failed to load cases.');
+    } catch (err: unknown) {
+      setError(formatApiError(err, 'Failed to load cases.'));
     } finally {
       setLoading(false);
     }
@@ -38,6 +47,21 @@ export const CasesPage: React.FC = () => {
   useEffect(() => {
     fetchCases();
   }, []);
+
+  const handleConfirmDelete = async () => {
+    if (!caseToDelete) return;
+    try {
+      setDeleting(true);
+      setDeleteError(null);
+      await apiService.deleteCase(caseToDelete.id);
+      setCaseToDelete(null);
+      await fetchCases();
+    } catch (err: unknown) {
+      setDeleteError(formatApiError(err, 'Failed to delete case.'));
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   const filteredCases = cases.filter((c) => {
     const matchesCategory = selectedCategory === 'All' || c.category.toLowerCase() === selectedCategory.toLowerCase();
@@ -175,8 +199,90 @@ export const CasesPage: React.FC = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {filteredCases.map((c) => (
-            <CaseCard key={c.id} caseItem={c} />
+            <CaseCard 
+              key={c.id} 
+              caseItem={c} 
+              onDelete={(item) => {
+                setDeleteError(null);
+                setCaseToDelete(item);
+              }}
+            />
           ))}
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {caseToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4 animate-in fade-in">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
+            <div className="flex items-start justify-between gap-3 border-b border-slate-800 pb-3">
+              <div className="flex items-center gap-2 text-rose-400">
+                <div className="p-2 rounded-xl bg-rose-950/60 border border-rose-500/30">
+                  <Trash2 className="w-5 h-5 text-rose-400" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-white">Delete Case</h3>
+                  <span className="font-mono text-xs text-rose-400 font-semibold">{caseToDelete.case_number}</span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setCaseToDelete(null)}
+                disabled={deleting}
+                className="p-1 text-slate-400 hover:text-white rounded-lg transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="space-y-2 text-xs text-slate-300">
+              <p>
+                Are you sure you want to permanently delete this troubleshooting case?
+              </p>
+              <div className="p-3 bg-slate-950/80 rounded-xl border border-slate-800 font-medium text-slate-200">
+                "{caseToDelete.title}"
+              </div>
+              <p className="text-slate-400 text-[11px] leading-relaxed">
+                This will delete the case record, all associated Cisco command evidence, and any uploaded <span className="font-mono text-cyan-300">.pkt</span> topology files.
+              </p>
+            </div>
+
+            {deleteError && (
+              <div className="p-3 bg-rose-950/50 border border-rose-500/40 rounded-xl flex items-start gap-2 text-xs text-rose-200">
+                <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                <span>{deleteError}</span>
+              </div>
+            )}
+
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setCaseToDelete(null)}
+                disabled={deleting}
+                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl text-xs font-semibold transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmDelete}
+                disabled={deleting}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-xs font-bold shadow-lg shadow-rose-600/30 transition-all disabled:opacity-50"
+              >
+                {deleting ? (
+                  <>
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                    <span>Deleting...</span>
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Confirm Delete</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

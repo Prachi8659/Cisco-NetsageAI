@@ -54,6 +54,21 @@ def test_analyze_modern_encrypted_twofish_eax_pkt(client):
     assert "PC1" in dev_names
     assert "PC2" in dev_names
     assert "Switch0" in dev_names
+    assert "Power Distribution Device0" in dev_names
+
+    # Check network vs infrastructure classification
+    power_dev = next(d for d in facts["devices"] if d["name"] == "Power Distribution Device0")
+    assert power_dev["is_network_device"] is False
+    assert power_dev["category"] == "INFRASTRUCTURE_OBJECT"
+    assert power_dev["device_type"] == "INFRASTRUCTURE_OBJECT"
+
+    switch_dev = next(d for d in facts["devices"] if d["name"] == "Switch0")
+    assert switch_dev["is_network_device"] is True
+    assert switch_dev["category"] == "NETWORK_DEVICE"
+    assert switch_dev["device_type"] == "Switch"
+
+    assert data["extraction_details"]["network_device_count"] == 4
+    assert data["extraction_details"]["infrastructure_count"] == 1
 
     for dev in facts["devices"]:
         assert dev["source"] == "PKT_EXTRACTED"
@@ -66,11 +81,18 @@ def test_analyze_modern_encrypted_twofish_eax_pkt(client):
         assert conn["status"] == "CONNECTED"
         assert conn["link_type"] == "Copper"
 
-    # Verify extracted IP addresses
+    # Verify extracted IP addresses and interface connection state
     pc0_int = next(i for i in facts["interfaces"] if i["device"] == "PC0" and i["ip"])
     assert pc0_int["ip"] == "192.168.1.1"
     assert pc0_int["mask"] == "255.255.255.0"
     assert pc0_int["source"] == "PKT_EXTRACTED"
+    assert pc0_int["status"] == "UP"
+    assert pc0_int["is_connected"] is True
+
+    # Verify unconnected interface on Switch0 is not fabricated as UP
+    unconnected_sw_int = next(i for i in facts["interfaces"] if i["device"] == "Switch0" and "0/10" in i["name"])
+    assert unconnected_sw_int["status"] == "DOWN"
+    assert unconnected_sw_int["is_connected"] is False
 
 def test_analyze_xml_pkt_topology(client):
     xml_topology = b"""<?xml version="1.0" encoding="UTF-8"?>

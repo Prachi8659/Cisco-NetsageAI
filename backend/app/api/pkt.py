@@ -38,9 +38,9 @@ async def upload_pkt_file(
     if existing_pkt:
         # Clean up old file if different
         try:
-            old_path = Path(existing_pkt.pkt_storage_path)
+            old_path = pkt_storage_service.get_file_path(existing_pkt.pkt_storage_path)
             if old_path.exists() and str(old_path) != storage_meta["storage_path"]:
-                os.remove(old_path)
+                old_path.unlink()
         except Exception:
             pass  # Non-blocking cleanup
 
@@ -115,10 +115,15 @@ def delete_pkt_file(
             detail=f"No .pkt file found for case #{case_id}."
         )
 
+    # Validate file path through storage security guard (prevents deleting files outside authorized directory)
     try:
-        file_path = Path(pkt_file.pkt_storage_path)
+        file_path = pkt_storage_service.get_file_path(pkt_file.pkt_storage_path)
         if file_path.exists():
-            os.remove(file_path)
+            file_path.unlink()
+    except HTTPException as he:
+        if he.status_code == status.HTTP_403_FORBIDDEN:
+            raise he
+        # If 404 (file already removed on disk), proceed to clean up the DB record
     except Exception:
         pass
 

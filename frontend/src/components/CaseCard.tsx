@@ -1,13 +1,14 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { FileCode2, ArrowRight } from 'lucide-react';
+import { FileCode2, ArrowRight, Trash2 } from 'lucide-react';
 import type { Case } from '../types';
 
 interface CaseCardProps {
   caseItem: Case;
+  onDelete?: (caseItem: Case) => void;
 }
 
-export const CaseCard: React.FC<CaseCardProps> = ({ caseItem }) => {
+export const CaseCard: React.FC<CaseCardProps> = ({ caseItem, onDelete }) => {
   const getSeverityBadge = (severity: string) => {
     switch (severity) {
       case 'CRITICAL':
@@ -35,9 +36,9 @@ export const CaseCard: React.FC<CaseCardProps> = ({ caseItem }) => {
   };
 
   return (
-    <div className="bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-2xl p-5 shadow-lg transition-all duration-200 hover:-translate-y-0.5 group flex flex-col justify-between">
+    <div className="bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-2xl p-5 shadow-lg transition-all duration-200 hover:-translate-y-0.5 group flex flex-col justify-between relative">
       <div>
-        {/* Header: Case Number + Status */}
+        {/* Header: Case Number + Status + Delete Button */}
         <div className="flex items-center justify-between gap-2 mb-3">
           <span className="font-mono text-xs font-bold text-cyan-400 bg-cyan-950/80 px-2 py-0.5 rounded border border-cyan-800/50">
             {caseItem.case_number}
@@ -46,6 +47,21 @@ export const CaseCard: React.FC<CaseCardProps> = ({ caseItem }) => {
             <span className={`px-2 py-0.5 text-[10px] font-bold uppercase rounded border ${getStatusBadge(caseItem.status)}`}>
               {caseItem.status}
             </span>
+            {onDelete && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onDelete(caseItem);
+                }}
+                className="p-1 text-slate-500 hover:text-rose-400 hover:bg-rose-950/40 border border-transparent hover:border-rose-500/30 rounded-lg transition-colors"
+                title={`Delete case ${caseItem.case_number}`}
+                aria-label={`Delete case ${caseItem.case_number}`}
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
+            )}
           </div>
         </div>
 

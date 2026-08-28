@@ -4,6 +4,7 @@ import { Navbar } from './components/Navbar';
 import { CasesPage } from './pages/CasesPage';
 import { CaseDetailPage } from './pages/CaseDetailPage';
 import { CreateCasePage } from './pages/CreateCasePage';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 export const App: React.FC = () => {
   return (
@@ -14,13 +15,15 @@ export const App: React.FC = () => {
 
         {/* Main Content Area */}
         <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <Routes>
-            <Route path="/" element={<CasesPage />} />
-            <Route path="/cases" element={<CasesPage />} />
-            <Route path="/cases/new" element={<CreateCasePage />} />
-            <Route path="/cases/:id" element={<CaseDetailPage />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
+          <ErrorBoundary>
+            <Routes>
+              <Route path="/" element={<CasesPage />} />
+              <Route path="/cases" element={<CasesPage />} />
+              <Route path="/cases/new" element={<CreateCasePage />} />
+              <Route path="/cases/:id" element={<CaseDetailPage />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </ErrorBoundary>
         </main>
 
         {/* Global Technical Footer */}

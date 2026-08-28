@@ -20,5 +20,11 @@ class Case(Base):
     # Relationship to uploaded PKT file
     pkt_file = relationship("PktFile", back_populates="case", uselist=False, cascade="all, delete-orphan")
 
+    # Relationship to Cisco command evidence
+    evidence = relationship("CiscoEvidence", back_populates="case", cascade="all, delete-orphan", order_by="CiscoEvidence.created_at.desc()")
+
+    # Relationship to Human-in-the-Loop Reviews and Audit Records
+    reviews = relationship("HumanReview", back_populates="case", cascade="all, delete-orphan", order_by="HumanReview.created_at.desc()")
+
     def __repr__(self):
         return f"<Case(id={self.id}, case_number='{self.case_number}', title='{self.title}')>"

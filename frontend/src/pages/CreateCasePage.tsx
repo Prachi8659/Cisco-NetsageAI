@@ -10,6 +10,7 @@ import {
 import type { SeverityLevel } from '../types';
 import { apiService } from '../services/api';
 import { SafetyNotice } from '../components/SafetyNotice';
+import { formatApiError } from '../utils/error';
 
 const CATEGORIES = [
   'VLAN',
@@ -44,15 +45,27 @@ export const CreateCasePage: React.FC = () => {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
       if (!file.name.toLowerCase().endsWith('.pkt')) {
-        setError(`Invalid file type '${file.name}'. Only .pkt files are allowed.`);
+        setError(`Invalid file format '${file.name}'. Only Cisco Packet Tracer (.pkt) files are accepted.`);
+        setSelectedPktFile(null);
+        e.target.value = '';
+        return;
+      }
+      if (file.size === 0) {
+        setError('The selected file is empty (0 bytes). Please select a valid .pkt topology file.');
+        setSelectedPktFile(null);
+        e.target.value = '';
         return;
       }
       if (file.size > 50 * 1024 * 1024) {
-        setError('File exceeds the 50MB size limit.');
+        setError(`File size (${(file.size / (1024 * 1024)).toFixed(1)} MB) exceeds the 50MB limit.`);
+        setSelectedPktFile(null);
+        e.target.value = '';
         return;
       }
       setError(null);
       setSelectedPktFile(file);
+    } else {
+      setSelectedPktFile(null);
     }
   };
 
@@ -84,9 +97,8 @@ export const CreateCasePage: React.FC = () => {
 
       // 3. Navigate to the case detail page
       navigate(`/cases/${createdCase.id}`);
-    } catch (err: any) {
-      const detail = err.response?.data?.detail || err.message || 'Failed to create troubleshooting case.';
-      setError(detail);
+    } catch (err: unknown) {
+      setError(formatApiError(err, 'Failed to create troubleshooting case.'));
       setSubmitting(false);
     }
   };
@@ -116,7 +128,7 @@ export const CreateCasePage: React.FC = () => {
           <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
           <div className="flex-1">
             <strong className="font-semibold text-rose-300">Submission Error: </strong>
-            {error}
+            <span>{typeof error === 'string' ? error : String(error)}</span>
           </div>
         </div>
       )}

@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import type { PktFile } from '../types';
 import { apiService } from '../services/api';
+import { formatApiError } from '../utils/error';
 
 interface PktUploadZoneProps {
   caseId: number | string;
@@ -82,9 +83,8 @@ export const PktUploadZone: React.FC<PktUploadZoneProps> = ({
       const res = await apiService.uploadPktFile(caseId, file);
       setSuccessMessage(`Successfully uploaded and associated '${res.pkt_filename}' with this case.`);
       onUploadSuccess(res);
-    } catch (err: any) {
-      const detail = err.response?.data?.detail || err.message || 'Failed to upload .pkt file.';
-      setErrorMessage(detail);
+    } catch (err: unknown) {
+      setErrorMessage(formatApiError(err, 'Failed to upload .pkt file.'));
     } finally {
       setUploading(false);
       if (fileInputRef.current) {
@@ -117,8 +117,8 @@ export const PktUploadZone: React.FC<PktUploadZoneProps> = ({
       await apiService.deletePktFile(caseId);
       setSuccessMessage('File removed successfully.');
       if (onDeleteSuccess) onDeleteSuccess();
-    } catch (err: any) {
-      setErrorMessage(err.response?.data?.detail || 'Failed to delete .pkt file.');
+    } catch (err: unknown) {
+      setErrorMessage(formatApiError(err, 'Failed to delete .pkt file.'));
     } finally {
       setUploading(false);
     }

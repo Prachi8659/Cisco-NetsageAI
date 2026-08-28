@@ -17,7 +17,13 @@ import type { Case, PktFile } from '../types';
 import { apiService } from '../services/api';
 import { PktUploadZone } from '../components/PktUploadZone';
 import { PktAnalysisViewer } from '../components/PktAnalysisViewer';
+import { CiscoEvidenceManager } from '../components/CiscoEvidenceManager';
+import { PythonRuleAnalysis } from '../components/PythonRuleAnalysis';
+import { AiDiagnosisPanel } from '../components/AiDiagnosisPanel';
+import { DiagnosisComparisonPanel } from '../components/DiagnosisComparisonPanel';
+import { HumanReviewPanel } from '../components/HumanReviewPanel';
 import { SafetyNotice } from '../components/SafetyNotice';
+import { formatApiError } from '../utils/error';
 
 export const CaseDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -32,8 +38,8 @@ export const CaseDetailPage: React.FC = () => {
       setError(null);
       const data = await apiService.getCaseById(id);
       setCaseData(data);
-    } catch (err: any) {
-      setError(err.response?.data?.detail || err.message || 'Failed to load case details.');
+    } catch (err: unknown) {
+      setError(formatApiError(err, 'Failed to load case details.'));
     } finally {
       setLoading(false);
     }
@@ -151,7 +157,35 @@ export const CaseDetailPage: React.FC = () => {
             hasPktFile={!!caseData.pkt_file}
           />
 
-          {/* 3. Symptom & Observed Fault Details */}
+          {/* 3. Cisco Show-Command Evidence Collection & Parser */}
+          <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-xl">
+            <CiscoEvidenceManager
+              caseId={caseData.id}
+            />
+          </div>
+
+          {/* 4. Python Rule-Based Fault Detection */}
+          <PythonRuleAnalysis
+            caseId={caseData.id}
+          />
+
+          {/* 5. AI-Assisted Network Diagnosis */}
+          <AiDiagnosisPanel
+            caseId={caseData.id}
+          />
+
+          {/* 6. AI vs Python Diagnosis Comparison Engine */}
+          <DiagnosisComparisonPanel
+            caseId={caseData.id}
+          />
+
+          {/* 7. Human Review & Remediation Verification */}
+          <HumanReviewPanel
+            caseId={caseData.id}
+            onCaseUpdated={fetchCase}
+          />
+
+          {/* 8. Symptom & Observed Fault Details */}
           <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-4">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <div className="flex items-center gap-2">
@@ -223,12 +257,17 @@ export const CaseDetailPage: React.FC = () => {
               </div>
 
               {/* Step 2: Cisco Evidence */}
-              <div className="p-3 rounded-xl border bg-slate-950/40 border-slate-800/80 text-slate-400 flex items-start gap-3 opacity-80">
-                <div className="p-1.5 rounded-lg bg-slate-800 text-slate-400 shrink-0 mt-0.5">
+              <div className="p-3 rounded-xl border bg-indigo-950/20 border-indigo-500/40 text-indigo-200 flex items-start gap-3 transition-colors">
+                <div className="p-1.5 rounded-lg bg-indigo-500/20 text-indigo-400 shrink-0 mt-0.5">
                   <Terminal className="w-4 h-4" />
                 </div>
                 <div>
-                  <span className="font-bold text-slate-300">2. Cisco Show Evidence</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-bold">2. Cisco Show Evidence</span>
+                    <span className="text-[10px] font-bold text-indigo-300 bg-indigo-950/80 px-1.5 py-0.2 rounded border border-indigo-800">
+                      Done / Ready
+                    </span>
+                  </div>
                   <p className="text-[11px] text-slate-400 mt-0.5">
                     Collect show ip interface brief, show ip route, show vlan brief from Packet Tracer.
                   </p>
@@ -236,53 +275,73 @@ export const CaseDetailPage: React.FC = () => {
               </div>
 
               {/* Step 3: Python Rule Engine */}
-              <div className="p-3 rounded-xl border bg-slate-950/40 border-slate-800/80 text-slate-400 flex items-start gap-3 opacity-80">
-                <div className="p-1.5 rounded-lg bg-slate-800 text-slate-400 shrink-0 mt-0.5">
+              <div className="p-3 rounded-xl border bg-purple-950/20 border-purple-500/40 text-purple-200 flex items-start gap-3 transition-colors">
+                <div className="p-1.5 rounded-lg bg-purple-500/20 text-purple-400 shrink-0 mt-0.5">
                   <Cpu className="w-4 h-4" />
                 </div>
                 <div>
-                  <span className="font-bold text-slate-300">3. Python Deterministic Rules</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-bold">3. Python Deterministic Rules</span>
+                    <span className="text-[10px] font-bold text-purple-300 bg-purple-950/80 px-1.5 py-0.2 rounded border border-purple-800">
+                      Done / Active
+                    </span>
+                  </div>
                   <p className="text-[11px] text-slate-400 mt-0.5">
-                    Independent rule checks (Duplicate IP, Gateway Mismatch, Interface Down, Missing VLAN).
+                    Evaluate 7 deterministic fault rules (Duplicate IP, Gateway, Subnet, Interface, VLAN, Route, Link).
                   </p>
                 </div>
               </div>
 
-              {/* Step 4: AI Diagnosis */}
-              <div className="p-3 rounded-xl border bg-slate-950/40 border-slate-800/80 text-slate-400 flex items-start gap-3 opacity-80">
-                <div className="p-1.5 rounded-lg bg-slate-800 text-slate-400 shrink-0 mt-0.5">
+              {/* Step 4: AI Diagnosis & Comparison */}
+              <div className="p-3 rounded-xl border bg-gradient-to-r from-fuchsia-950/30 to-indigo-950/30 border-fuchsia-500/40 text-fuchsia-200 flex items-start gap-3 transition-colors">
+                <div className="p-1.5 rounded-lg bg-fuchsia-500/20 text-fuchsia-400 shrink-0 mt-0.5">
                   <Sparkles className="w-4 h-4" />
                 </div>
                 <div>
-                  <span className="font-bold text-slate-300">4. AI Diagnosis & Comparison</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-bold">4. AI Diagnosis & Comparison</span>
+                    <span className="text-[10px] font-bold text-fuchsia-300 bg-fuchsia-950/80 px-1.5 py-0.2 rounded border border-fuchsia-800">
+                      Done / Active
+                    </span>
+                  </div>
                   <p className="text-[11px] text-slate-400 mt-0.5">
-                    Root cause inference, confidence rating, and Python vs AI comparison.
+                    Independent Gemini reasoning and cross-engine consensus / divergence verification.
                   </p>
                 </div>
               </div>
 
               {/* Step 5: Human Review */}
-              <div className="p-3 rounded-xl border bg-slate-950/40 border-slate-800/80 text-slate-400 flex items-start gap-3 opacity-80">
-                <div className="p-1.5 rounded-lg bg-slate-800 text-slate-400 shrink-0 mt-0.5">
+              <div className="p-3 rounded-xl border bg-emerald-950/20 border-emerald-500/40 text-emerald-200 flex items-start gap-3 transition-colors">
+                <div className="p-1.5 rounded-lg bg-emerald-500/20 text-emerald-400 shrink-0 mt-0.5">
                   <CheckSquare className="w-4 h-4" />
                 </div>
                 <div>
-                  <span className="font-bold text-slate-300">5. Mandatory Human Review</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-bold">5. Mandatory Human Review</span>
+                    <span className="text-[10px] font-bold text-emerald-300 bg-emerald-950/80 px-1.5 py-0.2 rounded border border-emerald-800">
+                      Active
+                    </span>
+                  </div>
                   <p className="text-[11px] text-slate-400 mt-0.5">
-                    ACCEPT / EDIT / REJECT decision with audit logging.
+                    ACCEPT / REJECT / NEEDS_REVIEW decision with audit logging.
                   </p>
                 </div>
               </div>
 
               {/* Step 6: Manual PT Fix & Verification */}
-              <div className="p-3 rounded-xl border bg-slate-950/40 border-slate-800/80 text-slate-400 flex items-start gap-3 opacity-80">
-                <div className="p-1.5 rounded-lg bg-slate-800 text-slate-400 shrink-0 mt-0.5">
+              <div className="p-3 rounded-xl border bg-cyan-950/20 border-cyan-500/40 text-cyan-200 flex items-start gap-3 transition-colors">
+                <div className="p-1.5 rounded-lg bg-cyan-500/20 text-cyan-400 shrink-0 mt-0.5">
                   <ShieldCheck className="w-4 h-4" />
                 </div>
                 <div>
-                  <span className="font-bold text-slate-300">6. Manual Fix & Verification</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-bold">6. Manual Fix & Verification</span>
+                    <span className="text-[10px] font-bold text-cyan-300 bg-cyan-950/80 px-1.5 py-0.2 rounded border border-cyan-800">
+                      Active
+                    </span>
+                  </div>
                   <p className="text-[11px] text-slate-400 mt-0.5">
-                    Apply manual CLI commands in Packet Tracer and verify ping/connectivity.
+                    Apply manual CLI commands in Packet Tracer and verify with 'Verify After Fix'.
                   </p>
                 </div>
               </div>
