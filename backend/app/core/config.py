@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     PKT_STORAGE_DIR: Path = PKT_STORAGE_DIR
     
     # Database (Default: local SQLite; easily overridden via DATABASE_URL env var on Render)
-DATABASE_URL: str = os.getenv("DATABASE_URL", f"sqlite:///{BACKEND_DIR}/netsage.db")    
+    DATABASE_URL: str = os.getenv("DATABASE_URL", f"sqlite:///{BACKEND_DIR}/netsage.db")    
     # Upload limits
     MAX_PKT_FILE_SIZE_BYTES: int = 50 * 1024 * 1024  # 50 MB
     ALLOWED_PKT_EXTENSIONS: list[str] = [".pkt"]
